@@ -26,7 +26,6 @@ import { Delete } from '@mui/icons-material';
 import './home.css';
 
 const diets = ['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Keto'];
-
 const cuisines = [
   'Italian',
   'Chinese',
@@ -44,6 +43,8 @@ const HomePage = () => {
   const [aiResponse, setAiResponse] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const apiKey = process.env.REACT_APP_GROQ_API_KEY; // API Key from .env (insecure!)
 
   // Handle diet preference changes
   const handleDietChange = (event) => {
@@ -133,17 +134,22 @@ Always present the recipe in a clear format, including the title, ingredients li
       setError(null);
       setAiResponse(null);
 
-      const response = await fetch('/api/chat', {
+      // Directly call groqcloud API
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`, // Exposed in client
+        },
+        body: JSON.stringify({
+          model: 'llama-3.1-70b-versatile',
+          messages: messages,
+        }),
       });
 
       if (!response.ok) {
-        // Extract error message from response
         const errorData = await response.json();
-        const errorMessage =
-          errorData.error?.error?.message || 'Failed to fetch AI response';
+        const errorMessage = errorData.error?.error?.message || 'Failed to fetch AI response';
         throw new Error(errorMessage);
       }
 
@@ -171,7 +177,7 @@ Always present the recipe in a clear format, including the title, ingredients li
       <TopBar />
       <Box
         sx={{
-          marginTop: '80px', // Accounts for the fixed top bar
+          marginTop: '80px',
           padding: '20px',
           maxWidth: '800px',
           marginLeft: 'auto',
@@ -238,9 +244,7 @@ Always present the recipe in a clear format, including the title, ingredients li
             {/* Available Ingredients */}
             <FormControl fullWidth margin="normal">
               <FormLabel>Available Ingredients</FormLabel>
-              <Box
-                sx={{ display: 'flex', alignItems: 'center', marginTop: '10px' }}
-              >
+              <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '10px' }}>
                 <TextField
                   fullWidth
                   variant="outlined"
