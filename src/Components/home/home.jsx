@@ -24,6 +24,9 @@ import {
 } from '@mui/material';
 import { Delete } from '@mui/icons-material';
 import './home.css';
+import { auth, db } from '../firebase/firebase';
+import { collection, addDoc } from "firebase/firestore";
+
 
 const diets = ['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Keto'];
 const cuisines = [
@@ -159,8 +162,11 @@ Always present the recipe in a clear format, including the title, ingredients li
       // Extract the assistant's message content
       const assistantMessage = data.choices[0]?.message?.content;
 
+      console.log('assistant message:', assistantMessage);
+
       if (assistantMessage) {
         setAiResponse(assistantMessage);
+        addSearchedRecipe(assistantMessage);
       } else {
         setError('AI did not return a valid response.');
       }
@@ -171,6 +177,22 @@ Always present the recipe in a clear format, including the title, ingredients li
       setLoading(false);
     }
   };
+
+  async function addSearchedRecipe(assistantMessage){
+    try {
+      const userId = auth.currentUser.uid;
+      const recipesRef = collection(db, "users", userId, "recipes");
+      await addDoc(recipesRef, {
+        recipe: assistantMessage,
+        timestamp: new Date(),
+      });
+      console.log("Recipe added successfully!");
+      alert("Recipe added successfully!");
+    } catch (e) {
+      console.error("Error adding document: ", e);
+      alert("Error adding document: ", e);
+    }
+  }
 
   return (
     <div>

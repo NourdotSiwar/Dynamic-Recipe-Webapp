@@ -1,7 +1,8 @@
 .profile-container {
   margin-top: 80px;
   padding: 20px;
-  max-width: 800px;
+  width: 100%; 
+  max-width: 100%; 
   margin-left: auto;
   margin-right: auto;
   background-color: #f9f9f9;
@@ -9,6 +10,27 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   color: #333;
 }
+
+@media (min-width: 1200px) {
+  .profile-container {
+    max-width: 1200px; 
+  }
+}
+
+
+@media (min-width: 768px) {
+  .profile-container {
+    max-width: 90%; 
+  }
+}
+
+
+@media (max-width: 767px) {
+  .profile-container {
+    max-width: 100%; 
+  }
+}
+
 
 .profile-header {
   display: flex;
@@ -27,6 +49,7 @@
   text-align: center;
   font-size: 28px;
 }
+
 
 .edit-button {
   background-color: #4CAF50;
@@ -55,3 +78,49 @@
 .profile-details strong {
   color: #555;
 }
+
+.profile-recipes {
+  margin-top: 20px;
+}
+
+.profile-recipes h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+
+.profile-recipes ul {
+  list-style: none;
+  padding: 0;
+}
+
+.profile-recipes li {
+  background-color: #fff;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.profile-recipes li:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.recipe-name {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.recipe-timestamp {
+  font-size: 14px;
+  color: #888;
+  margin-top: 10px;
+}
+

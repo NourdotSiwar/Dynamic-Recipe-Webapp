@@ -25,20 +25,22 @@ const TopBar = () => {
             <FaBookOpen className="app-icon" />
             Dynamic Recipe App
           </Link>
+        </div>
+        <div className="right-section">
           <Link to="/profile" className="nav-link">
             <FaUser className="nav-icon" />
             Profile
           </Link>
-        </div>
-        <div className="logout">
-          <button onClick={handleLogout}>
-            <FaSignOutAlt className="logout-icon" />
-            Logout
-          </button>
+          <div className="logout">
+            <button onClick={handleLogout}>
+              <FaSignOutAlt className="logout-icon" />
+              Logout
+            </button>
+          </div>
         </div>
       </div>
     </div>
   );
-};
+}  
 
 export default TopBar;
