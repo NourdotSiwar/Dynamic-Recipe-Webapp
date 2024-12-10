@@ -1,0 +1,122 @@
+/* home.css */
+
+/* Apply a full-screen gradient similar to auth pages */
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    height: 100%;
+    background: linear-gradient(to bottom right, #FFFFFF, #CFFCCB);
+  }
+  
+  .home-background {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Hero section */
+  .home-hero {
+    text-align: center;
+    padding: 60px 20px;
+    animation: fadeDown 0.6s ease forwards;
+  }
+  
+  .home-hero h1 {
+    font-size: 48px;
+    margin-bottom: 16px;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .home-hero p {
+    font-size: 18px;
+    color: #555;
+    margin-bottom: 40px;
+  }
+  
+  /* Container for the main card/form area */
+  .home-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex: 1;
+    padding: 40px 20px;
+    animation: fadeScale 0.5s ease forwards;
+  }
+  
+  /* Subtle animations */
+  @keyframes fadeScale {
+    0% { opacity: 0; transform: scale(0.95); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  
+  @keyframes fadeDown {
+    0% { opacity: 0; transform: translateY(-20px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* Card styling for the recipe form/search results */
+  .home-card {
+    width: 100%;
+    max-width: 800px;
+    background: #FFF;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    padding: 32px;
+  }
+  
+  .home-card h2 {
+    font-weight: bold;
+    margin-bottom: 24px;
+    text-align: center;
+    color: #333;
+  }
+  
+  .home-card .section-title {
+    font-weight: bold;
+    margin-top: 32px;
+    margin-bottom: 8px;
+    color: #333;
+  }
+  
+  .home-card .MuiFormLabel-root {
+    font-weight: 600;
+  }
+  
+  .home-card .MuiButton-containedPrimary {
+    background-color: #78C850 !important; 
+    font-weight: bold !important;
+  }
+  
+  .home-card .MuiButton-containedPrimary:hover {
+    background-color: #66A844 !important;
+  }
+  
+  /* Ingredients list, recipe display styling, etc. */
+  .home-recipe {
+    margin-top: 30px;
+  }
+  
+  .home-recipe h5 {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .home-recipe ul, .home-recipe ol {
+    padding-left: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .home-recipe li {
+    margin-bottom: 8px;
+  }
+  
+  /* Error messages or loading states */
+  .home-error {
+    color: red;
+    margin-top: 10px;
+    font-weight: bold;
+    text-align: center;
+  }  

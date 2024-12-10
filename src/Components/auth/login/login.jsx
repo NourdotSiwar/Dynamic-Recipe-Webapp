@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react'
-import './login.css'
-import { FaEnvelope, FaLock } from 'react-icons/fa'
+import { Box, Typography, TextField, Button, FormControlLabel, Checkbox, Link } from '@mui/material';
+import { FaEnvelope, FaLock } from 'react-icons/fa';
 import { doSignInWithEmailAndPassword } from '../../firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/authContext/context';
+import '../auth.css';
 
 const LoginForm = () => {
-
   const { userLoggedIn } = useAuth();
-      console.log('useAuh Value;', useAuth());
-
   const navigate = useNavigate();
   const [isSigningIn, setIsSigningIn] = useState(false);
 
@@ -19,94 +17,129 @@ const LoginForm = () => {
   const [rememberMe, setRememberMe] = useState(false)
 
   useEffect(() => {
-      const savedUsername = localStorage.getItem('rememberedUsername');
-      if (savedUsername) {
-        setEmail(savedUsername);
-        setRememberMe(true);
-      }
-    }, []);
+    const savedUsername = localStorage.getItem('rememberedUsername');
+    if (savedUsername) {
+      setEmail(savedUsername);
+      setRememberMe(true);
+    }
+  }, []);
 
-    useEffect(() => {
-      if (rememberMe) {
-        localStorage.setItem('rememberedUsername', email);
-      } else {
-        localStorage.removeItem('rememberedUsername');
-      }
-    }, [rememberMe, email]);
+  useEffect(() => {
+    if (rememberMe) {
+      localStorage.setItem('rememberedUsername', email);
+    } else {
+      localStorage.removeItem('rememberedUsername');
+    }
+  }, [rememberMe, email]);
 
-    useEffect(() => {
-      if (userLoggedIn) {
-        navigate('/home', { replace: true });
-      }
-    }, [userLoggedIn, navigate]);
+  useEffect(() => {
+    if (userLoggedIn) {
+      navigate('/home', { replace: true });
+    }
+  }, [userLoggedIn, navigate]);
 
   const onSubmit = async (e) => {
-    e.preventDefault()
-    if(isSigningIn){
-      setError('You are already signing in')
-      return
+    e.preventDefault();
+    if (isSigningIn) {
+      setError('You are already signing in');
+      return;
     }
 
-      setIsSigningIn(true)
-      setError('')
+    setIsSigningIn(true);
+    setError('');
 
-      try {
-            await doSignInWithEmailAndPassword(email, password)
-            } catch (error) {
-            setError(error.message || 'Failed to log in')
-            setIsSigningIn(false)
-            }
-      }
-
+    try {
+      await doSignInWithEmailAndPassword(email, password);
+    } catch (error) {
+      setError(error.message || 'Failed to log in');
+      setIsSigningIn(false);
+    }
+  }
 
   return (
-    <div className='wrapper'>
-      <form onSubmit={onSubmit}>
-        <h1>Login</h1>
-        <div className="input-box">
-          <input 
-          type="text" 
-          placeholder='Email' 
-          value = {email}
-          onChange = {(e) => setEmail(e.target.value)}
-          required
-            aria-label="email"
-          /> 
-          <FaEnvelope className='icon'/> 
-        </div>
-        <div className="input-box">
-          <input type="password" 
-          placeholder='Password' 
-          value = {password}
-          onChange = {(e) => setPassword(e.target.value)}
-          required
-          aria-label="password"
-          />
-          <FaLock className='icon'/>
-        </div>
+    <div className="auth-background">
+      <div className="auth-card">
+        <Typography variant="h4" className="auth-title" gutterBottom>
+          Welcome Back
+        </Typography>
+        <Typography variant="body1" className="auth-subtitle">
+          Log in to continue exploring delicious recipes.
+        </Typography>
+        <form onSubmit={onSubmit}>
+          <div className="auth-field">
+            <TextField
+              fullWidth
+              variant="outlined"
+              label="Email"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <Box sx={{ mr: 1, color: '#555', display: 'flex', alignItems: 'center' }}>
+                    <FaEnvelope />
+                  </Box>
+                )
+              }}
+            />
+          </div>
+          <div className="auth-field">
+            <TextField
+              fullWidth
+              variant="outlined"
+              label="Password"
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <Box sx={{ mr: 1, color: '#555', display: 'flex', alignItems: 'center' }}>
+                    <FaLock />
+                  </Box>
+                )
+              }}
+            />
+          </div>
 
-        <div className="remember-forgot">
-          <label>
-            <input 
-            type="checkbox" 
-            checked={rememberMe}
-            onChange={(e) => setRememberMe(e.target.checked)}
-            /> Remember me
-            </label>
-          <a href="#">Forgot password?</a>
-        </div>
+          <div className="auth-remember">
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  sx={{ color: '#78C850' }}
+                />
+              }
+              label="Remember me"
+            />
+            <Link href="#" sx={{ color: '#2ECC71', fontSize: '0.9rem' }}>
+              Forgot password?
+            </Link>
+          </div>
 
-        {error && <p className='error'>{error}</p>}
+          {error && <Typography variant="body2" className="auth-error">{error}</Typography>}
 
-        <button type="submit" disabled={isSigningIn}>
-              {isSigningIn ? 'Logging In...' : 'Login'}
-            </button>
+          <Button
+            type="submit"
+            variant="contained"
+            fullWidth
+            disabled={isSigningIn}
+            className="auth-button"
+          >
+            {isSigningIn ? 'Logging In...' : 'Login'}
+          </Button>
 
-        <div className="register-link">
-          <p>Don't have an account? <a href="/register">Register</a></p>
-        </div>
-      </form>
+          <Typography variant="body2" align="center">
+            Don't have an account?{' '}
+            <a href="/register" className="auth-link">
+              Register
+            </a>
+          </Typography>
+        </form>
       </div>
+    </div>
   )
 }
 
