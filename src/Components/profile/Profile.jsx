@@ -105,11 +105,13 @@ const Profile = () => {
         await setDoc(recipeRef, updatedRecipe, { merge: true });
 
         // Update local state
-        setRecipes((prevRecipes) =>
-          prevRecipes.map((r) =>
+        setRecipes((prevRecipes) => {
+          const newRecipes = prevRecipes.map((r) =>
             r.id === recipeId ? updatedRecipe : r
-          )
-        );
+          );
+          // Sort by favorite status: favorites at the top
+          return newRecipes.sort((a, b) => (b.isFavorite ? 1 : -1));
+        });
       }
     } catch (error) {
       console.error("Error updating favorite status: ", error);
@@ -171,13 +173,6 @@ const Profile = () => {
   if (!currentUser) {
     return <div>Loading...</div>;
   }
-
-
-  const sortedRecipes = [...recipes].sort((a, b) => {
-    if (b.isFavorite && !a.isFavorite) return 1;
-    if (!b.isFavorite && a.isFavorite) return -1;
-    return 0;
-  });
 
   // This function is mainly used when recipe's note section or title has been edited
   const handleSaveRecipe = async () => {
@@ -269,13 +264,13 @@ const Profile = () => {
           }}
         />
 
-      {sortedRecipes.length === 0 && (
+      {filteredRecipes.length === 0 && (
         <Typography variant="body1" align="center">
           No recipes match your search criteria.
         </Typography>
       )}
 
-        {sortedRecipes.map((recipe) => (
+        {filteredRecipes.map((recipe) => (
           <Paper key={recipe.id} sx={{ padding: '20px', marginBottom: '20px', position: 'relative' }} elevation={1}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
       <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
