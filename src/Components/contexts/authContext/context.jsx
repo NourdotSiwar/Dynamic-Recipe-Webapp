@@ -4,10 +4,12 @@ import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 const AuthContext = React.createContext();
 
+// This function is used to receive the current user in other files
 export function useAuth(){
       return useContext(AuthContext);
 }
 
+// A firebase function to facilitate authentication
 export function AuthProvider({children}){
       const [currentUser, setCurrentUser] = useState(null);
       const [userLoggedIn, setUserLoggedIn] = useState(false);

@@ -26,6 +26,24 @@ const Profile = () => {
   const [username, setUsername] = useState('');
   const [photoURL, setPhotoURL] = useState('');
 
+  const [editRecipeOpen, setEditRecipeOpen] = useState(false);
+  const [currentRecipe, setCurrentRecipe] = useState(null);
+
+    // Making sure user is valid and displaying their correct infomraiton
+    useEffect(() => {
+      if (currentUser) {
+        fetchUserSearchedRecipes(currentUser.uid);
+        setUsername(currentUser.displayName || '');
+        setPhotoURL(currentUser.photoURL || '');
+      }
+    }, [currentUser, fetchUserSearchedRecipes]);  
+
+  const handleEditRecipeClick = (recipe) => {
+    setCurrentRecipe(recipe);
+    setEditRecipeOpen(true);
+  };
+
+  // Allow user to search their searched recipes
   const fetchUserSearchedRecipes = useCallback(async (userId) => {
     if (!currentUser) return;
     try {
@@ -41,13 +59,6 @@ const Profile = () => {
     }
   }, [currentUser]);
 
-  useEffect(() => {
-    if (currentUser) {
-      fetchUserSearchedRecipes(currentUser.uid);
-      setUsername(currentUser.displayName || '');
-      setPhotoURL(currentUser.photoURL || '');
-    }
-  }, [currentUser, fetchUserSearchedRecipes]);
 
   const handleDeleteRecipe = async (recipeId) => {
     if (!currentUser) return;
@@ -99,6 +110,27 @@ const Profile = () => {
   if (!currentUser) {
     return <div>Loading...</div>;
   }
+
+  // This function is mainly used when recipe's note section or title has been edited
+  const handleSaveRecipe = async () => {
+    if (!currentUser || !currentRecipe) return;
+    
+    const userId = currentUser.uid;
+    const recipeRef = doc(db, "users", userId, "recipes", currentRecipe.id);
+  
+    try {
+      await setDoc(recipeRef, { ...currentRecipe }, { merge: true });
+      setRecipes((prevRecipes) =>
+        prevRecipes.map((recipe) =>
+          recipe.id === currentRecipe.id ? currentRecipe : recipe
+        )
+      );
+      setEditRecipeOpen(false);
+    } catch (error) {
+      console.error("Error updating recipe:", error);
+    }
+  };
+  
 
   return (
     <div>
@@ -154,15 +186,17 @@ const Profile = () => {
 
         {recipes.map((recipe) => (
           <Paper key={recipe.id} sx={{ padding: '20px', marginBottom: '20px', position: 'relative' }} elevation={1}>
-            {/* Top row: Title and Delete button */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                {recipe.title}
-              </Typography>
-              <IconButton color="error" onClick={() => handleDeleteRecipe(recipe.id)}>
-                <FaTrash />
-              </IconButton>
-            </Box>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>{recipe.title}</Typography>
+          <Box>
+            <IconButton color="primary" onClick={() => handleEditRecipeClick(recipe)}>
+              <FaEdit />
+            </IconButton>
+            <IconButton color="error" onClick={() => handleDeleteRecipe(recipe.id)}>
+              <FaTrash />
+            </IconButton>
+          </Box>
+        </Box>
 
             <Typography variant="subtitle1" sx={{ fontWeight: 'bold', marginBottom: '8px' }}>
               Ingredients:
@@ -187,7 +221,15 @@ const Profile = () => {
                 <Typography variant="subtitle1" sx={{ fontWeight: 'bold', marginBottom: '8px' }}>
                   Notes:
                 </Typography>
-                <Typography variant="body1" sx={{ marginBottom: '16px' }}>{recipe.notes}</Typography>
+                <Typography variant="body1" sx={{ marginBottom: '16px' }}>
+                {recipe.notes.split('\n').map((line, index) => (
+                <span key={index}>
+                {line}
+                <br />
+                </span>
+                ))}
+                </Typography>
+
               </>
             )}
 
@@ -212,7 +254,7 @@ const Profile = () => {
         {/* Edit Profile Dialog */}
         <Dialog open={editOpen} onClose={handleCloseEdit}>
           <DialogTitle>Edit Profile</DialogTitle>
-          <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '300px' }}>
+          <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '400px', marginTop: '16px' }}>
             <TextField
               label="Username"
               variant="outlined"
@@ -235,6 +277,32 @@ const Profile = () => {
           </DialogActions>
         </Dialog>
       </Box>
+
+    <Dialog open={editRecipeOpen} onClose={() => setEditRecipeOpen(false)}>
+    <DialogTitle>Edit Recipe</DialogTitle>
+    <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '600px' }}>
+    <TextField
+    label="Title"
+    variant="outlined"
+    fullWidth
+    value={currentRecipe?.title || ''}
+    onChange={(e) => setCurrentRecipe({ ...currentRecipe, title: e.target.value })}
+    />
+    <TextField
+    label="Notes"
+    variant="outlined"
+    fullWidth
+    multiline
+    rows={5}
+    value={currentRecipe?.notes || ''}
+    onChange={(e) => setCurrentRecipe({ ...currentRecipe, notes: e.target.value })}
+    />
+    </DialogContent>
+    <DialogActions>
+    <Button onClick={() => setEditRecipeOpen(false)} color="inherit">Cancel</Button>
+    <Button onClick={handleSaveRecipe} variant="contained" color="primary">Save</Button>
+    </DialogActions>
+    </Dialog>
     </div>
   );
 }
