@@ -8,6 +8,7 @@ import '../auth.css';
 const RegisterForm = () => {
   const navigate = useNavigate();
 
+  // Controlled inputs and state for registering
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -18,6 +19,7 @@ const RegisterForm = () => {
     e.preventDefault();
     setError('');
 
+    // Ensure passwords match before attempting registration
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -26,6 +28,7 @@ const RegisterForm = () => {
     setIsRegistering(true);
 
     try {
+      // Create a new user account and then navigate to home
       await doCreateUserWithEmailAndPassword(email, password);
       navigate('/home');
     } catch (error) {
@@ -33,18 +36,21 @@ const RegisterForm = () => {
     } finally {
       setIsRegistering(false);
     }
-  }
+  };
 
   return (
     <div className="auth-background">
       <div className="auth-card">
+        {/* Page title and subtitle */}
         <Typography variant="h4" className="auth-title" gutterBottom>
           Create Account
         </Typography>
         <Typography variant="body1" className="auth-subtitle">
           Join us and start exploring personalized recipes.
         </Typography>
+
         <form onSubmit={onSubmit}>
+          {/* Email input field */}
           <div className="auth-field">
             <TextField
               fullWidth
@@ -63,6 +69,7 @@ const RegisterForm = () => {
               }}
             />
           </div>
+          {/* Password input field */}
           <div className="auth-field">
             <TextField
               fullWidth
@@ -81,6 +88,7 @@ const RegisterForm = () => {
               }}
             />
           </div>
+          {/* Confirm password input field */}
           <div className="auth-field">
             <TextField
               fullWidth
@@ -100,8 +108,10 @@ const RegisterForm = () => {
             />
           </div>
 
+          {/* Display any error messages during registration */}
           {error && <Typography variant="body2" className="auth-error">{error}</Typography>}
 
+          {/* Registration submit button */}
           <Button
             type="submit"
             variant="contained"
@@ -112,6 +122,7 @@ const RegisterForm = () => {
             {isRegistering ? 'Registering...' : 'Register'}
           </Button>
 
+          {/* Link to go back to login if user already has an account */}
           <Typography variant="body2" align="center">
             Already have an account?{' '}
             <a href="/" className="auth-link">
@@ -121,7 +132,7 @@ const RegisterForm = () => {
         </form>
       </div>
     </div>
-  )
+  );
 };
 
 export default RegisterForm;

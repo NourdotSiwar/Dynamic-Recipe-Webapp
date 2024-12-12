@@ -11,11 +11,13 @@ const LoginForm = () => {
   const navigate = useNavigate();
   const [isSigningIn, setIsSigningIn] = useState(false);
 
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [rememberMe, setRememberMe] = useState(false)
+  // Controlled inputs and error state
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
 
+  // Restore remembered email if present
   useEffect(() => {
     const savedUsername = localStorage.getItem('rememberedUsername');
     if (savedUsername) {
@@ -24,6 +26,7 @@ const LoginForm = () => {
     }
   }, []);
 
+  // Persist or remove remembered email based on checkbox
   useEffect(() => {
     if (rememberMe) {
       localStorage.setItem('rememberedUsername', email);
@@ -32,6 +35,7 @@ const LoginForm = () => {
     }
   }, [rememberMe, email]);
 
+  // If user is already logged in, redirect to home
   useEffect(() => {
     if (userLoggedIn) {
       navigate('/home', { replace: true });
@@ -54,7 +58,7 @@ const LoginForm = () => {
       setError(error.message || 'Failed to log in');
       setIsSigningIn(false);
     }
-  }
+  };
 
   return (
     <div className="auth-background">
@@ -66,6 +70,7 @@ const LoginForm = () => {
           Log in to continue exploring delicious recipes.
         </Typography>
         <form onSubmit={onSubmit}>
+          {/* Email input */}
           <div className="auth-field">
             <TextField
               fullWidth
@@ -84,6 +89,7 @@ const LoginForm = () => {
               }}
             />
           </div>
+          {/* Password input */}
           <div className="auth-field">
             <TextField
               fullWidth
@@ -103,6 +109,7 @@ const LoginForm = () => {
             />
           </div>
 
+          {/* Remember me and forgot password link */}
           <div className="auth-remember">
             <FormControlLabel
               control={
@@ -119,8 +126,10 @@ const LoginForm = () => {
             </Link>
           </div>
 
+          {/* Display any error messages */}
           {error && <Typography variant="body2" className="auth-error">{error}</Typography>}
 
+          {/* Login button */}
           <Button
             type="submit"
             variant="contained"
@@ -131,6 +140,7 @@ const LoginForm = () => {
             {isSigningIn ? 'Logging In...' : 'Login'}
           </Button>
 
+          {/* Redirect to register if no account */}
           <Typography variant="body2" align="center">
             Don't have an account?{' '}
             <a href="/register" className="auth-link">
@@ -140,7 +150,7 @@ const LoginForm = () => {
         </form>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default LoginForm;

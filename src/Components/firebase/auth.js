@@ -13,7 +13,7 @@ export const doSignOut = () => {
   return auth.signOut();
 }
 
-// New function to update the user's displayName and photoURL
+// Function to update the user's displayName and photoURL
 export const doUpdateUserProfile = async (displayName, photoURL) => {
   if (!auth.currentUser) return;
   return updateProfile(auth.currentUser, {
