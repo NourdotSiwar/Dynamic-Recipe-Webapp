@@ -29,14 +29,6 @@ const Profile = () => {
   const [editRecipeOpen, setEditRecipeOpen] = useState(false);
   const [currentRecipe, setCurrentRecipe] = useState(null);
 
-    // Making sure user is valid and displaying their correct infomraiton
-    useEffect(() => {
-      if (currentUser) {
-        fetchUserSearchedRecipes(currentUser.uid);
-        setUsername(currentUser.displayName || '');
-        setPhotoURL(currentUser.photoURL || '');
-      }
-    }, [currentUser, fetchUserSearchedRecipes]);  
 
   const handleEditRecipeClick = (recipe) => {
     setCurrentRecipe(recipe);
@@ -58,6 +50,16 @@ const Profile = () => {
       console.error("Error fetching user recipes: ", error);
     }
   }, [currentUser]);
+
+      // Making sure user is valid and displaying their correct infomraiton
+      useEffect(() => {
+        if (currentUser) {
+          fetchUserSearchedRecipes(currentUser.uid);
+          setUsername(currentUser.displayName || '');
+          setPhotoURL(currentUser.photoURL || '');
+        }
+      }, [currentUser, fetchUserSearchedRecipes]);  
+  
 
 
   const handleDeleteRecipe = async (recipeId) => {
