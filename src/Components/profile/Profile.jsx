@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import './Profile.css';
-import { FaUserCircle, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaUserCircle, FaEdit, FaTrash,  FaStar, FaRegStar } from 'react-icons/fa';
 import { useAuth } from '../contexts/authContext/context';
 import TopBar from '../header/topbar';
 import { db, auth } from '../firebase/firebase';
@@ -16,8 +16,12 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField
+  TextField,
+  InputAdornment
 } from '@mui/material';
+
+import SearchIcon from '@mui/icons-material/Search'; // Import SearchIcon from @mui/icons-material
+
 
 const Profile = () => {
   const { currentUser } = useAuth();
@@ -29,11 +33,22 @@ const Profile = () => {
   const [editRecipeOpen, setEditRecipeOpen] = useState(false);
   const [currentRecipe, setCurrentRecipe] = useState(null);
 
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const handleEditRecipeClick = (recipe) => {
-    setCurrentRecipe(recipe);
-    setEditRecipeOpen(true);
-  };
+  const filteredRecipes = recipes.filter((recipe) =>
+    recipe.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  // use some because this field is stored as array of strings
+    recipe.ingredients?.some((ingredient) =>
+      ingredient.toLowerCase().includes(searchQuery.toLowerCase())
+    ) ||
+    recipe.instructions?.some((ingredient) =>
+      ingredient.toLowerCase().includes(searchQuery.toLowerCase())
+    ) ||
+        // use includes because these fields are string type
+    recipe.notes?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
+  
 
   // Allow user to search their searched recipes
   const fetchUserSearchedRecipes = useCallback(async (userId) => {
@@ -51,16 +66,19 @@ const Profile = () => {
     }
   }, [currentUser]);
 
-      // Making sure user is valid and displaying their correct infomraiton
-      useEffect(() => {
-        if (currentUser) {
-          fetchUserSearchedRecipes(currentUser.uid);
-          setUsername(currentUser.displayName || '');
-          setPhotoURL(currentUser.photoURL || '');
-        }
-      }, [currentUser, fetchUserSearchedRecipes]);  
-  
+    // Making sure user is valid and displaying their correct infomraiton
+    useEffect(() => {
+      if (currentUser) {
+        fetchUserSearchedRecipes(currentUser.uid);
+        setUsername(currentUser.displayName || '');
+        setPhotoURL(currentUser.photoURL || '');
+      }
+    }, [currentUser, fetchUserSearchedRecipes]);  
 
+    const handleEditRecipeClick = (recipe) => {
+      setCurrentRecipe(recipe);
+      setEditRecipeOpen(true);
+    };
 
   const handleDeleteRecipe = async (recipeId) => {
     if (!currentUser) return;
@@ -73,6 +91,47 @@ const Profile = () => {
       console.error("Error deleting recipe: ", error);
     }
   };
+
+  const handleToggleFavorite = async (recipeId) => {
+    if (!currentUser) return;
+    const userId = currentUser.uid;
+    const recipeRef = doc(db, "users", userId, "recipes", recipeId);
+
+    try {
+      const recipe = recipes.find((r) => r.id === recipeId);
+      if (recipe) {
+        // Toggle favorite status
+        const updatedRecipe = { ...recipe, isFavorite: !recipe.isFavorite };
+        await setDoc(recipeRef, updatedRecipe, { merge: true });
+
+        // Update local state
+        setRecipes((prevRecipes) =>
+          prevRecipes.map((r) =>
+            r.id === recipeId ? updatedRecipe : r
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error updating favorite status: ", error);
+    }
+  };
+  
+
+  const highlightText = (text, query) => {
+    if (!query) return text;
+    const parts = text.split(new RegExp(`(${query})`, 'gi'));
+    return parts.map((part, index) => (
+      <span
+        key={index}
+        style={{
+          color: part.toLowerCase() === query.toLowerCase() ? '#FF5722' : 'inherit',
+        }}
+      >
+        {part}
+      </span>
+    ));
+  };
+  
 
   const handleEditProfileClick = () => {
     setEditOpen(true);
@@ -112,6 +171,13 @@ const Profile = () => {
   if (!currentUser) {
     return <div>Loading...</div>;
   }
+
+
+  const sortedRecipes = [...recipes].sort((a, b) => {
+    if (b.isFavorite && !a.isFavorite) return 1;
+    if (!b.isFavorite && a.isFavorite) return -1;
+    return 0;
+  });
 
   // This function is mainly used when recipe's note section or title has been edited
   const handleSaveRecipe = async () => {
@@ -182,15 +248,43 @@ const Profile = () => {
           Your Searched Recipes
         </Typography>
 
-        {recipes.length === 0 && (
-          <Typography variant="body1" align="center">No recipes found</Typography>
-        )}
+          <TextField
+          label="Search Recipes"
+          variant="outlined"
+          fullWidth
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          sx={{
+            marginBottom: '20px',
+            borderRadius: '8px', // Add rounded corners
+            backgroundColor: '#f9f9f9', // Light background color
+          }}
+          placeholder="Search by recipe title, ingredient, instruction, or note..."
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon color="action" />
+              </InputAdornment>
+            ),
+          }}
+        />
 
-        {recipes.map((recipe) => (
+      {sortedRecipes.length === 0 && (
+        <Typography variant="body1" align="center">
+          No recipes match your search criteria.
+        </Typography>
+      )}
+
+        {sortedRecipes.map((recipe) => (
           <Paper key={recipe.id} sx={{ padding: '20px', marginBottom: '20px', position: 'relative' }} elevation={1}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>{recipe.title}</Typography>
+      <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+      {highlightText(recipe.title, searchQuery)}
+      </Typography>
           <Box>
+          <IconButton color="primary" onClick={() => handleToggleFavorite(recipe.id)}>
+                  {recipe.isFavorite ? <FaStar /> : <FaRegStar />}
+            </IconButton>
             <IconButton color="primary" onClick={() => handleEditRecipeClick(recipe)}>
               <FaEdit />
             </IconButton>
@@ -205,7 +299,9 @@ const Profile = () => {
             </Typography>
             <ul style={{ marginTop: 0, marginBottom: '16px', paddingLeft: '20px' }}>
               {recipe.ingredients && recipe.ingredients.map((ing, i) => (
-                <li key={i} style={{ marginBottom: '4px' }}>{ing}</li>
+                <span key={i}>
+                <li key={i} style={{ marginBottom: '4px' }}>{highlightText(ing, searchQuery)}{i < recipe.ingredients.length - 1 && ', '}</li>
+                </span>
               ))}
             </ul>
 
@@ -214,7 +310,7 @@ const Profile = () => {
             </Typography>
             <ol style={{ marginTop: 0, marginBottom: '16px', paddingLeft: '20px' }}>
               {recipe.instructions && recipe.instructions.map((step, i) => (
-                <li key={i} style={{ marginBottom: '8px' }}>{step}</li>
+                <li key={i} style={{ marginBottom: '8px' }}>{highlightText(step, searchQuery)}</li>
               ))}
             </ol>
 
@@ -226,7 +322,7 @@ const Profile = () => {
                 <Typography variant="body1" sx={{ marginBottom: '16px' }}>
                 {recipe.notes.split('\n').map((line, index) => (
                 <span key={index}>
-                {line}
+                 {highlightText(line, searchQuery)}
                 <br />
                 </span>
                 ))}
@@ -280,30 +376,60 @@ const Profile = () => {
         </Dialog>
       </Box>
 
-    <Dialog open={editRecipeOpen} onClose={() => setEditRecipeOpen(false)}>
-    <DialogTitle>Edit Recipe</DialogTitle>
-    <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '600px' }}>
-    <TextField
-    label="Title"
-    variant="outlined"
-    fullWidth
-    value={currentRecipe?.title || ''}
-    onChange={(e) => setCurrentRecipe({ ...currentRecipe, title: e.target.value })}
-    />
-    <TextField
-    label="Notes"
-    variant="outlined"
-    fullWidth
-    multiline
-    rows={5}
-    value={currentRecipe?.notes || ''}
-    onChange={(e) => setCurrentRecipe({ ...currentRecipe, notes: e.target.value })}
-    />
-    </DialogContent>
-    <DialogActions>
-    <Button onClick={() => setEditRecipeOpen(false)} color="inherit">Cancel</Button>
-    <Button onClick={handleSaveRecipe} variant="contained" color="primary">Save</Button>
-    </DialogActions>
+      <Dialog open={editRecipeOpen} onClose={() => setEditRecipeOpen(false)}>
+      <DialogTitle>Edit Recipe</DialogTitle>
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '600px', marginTop: '16px' }}>
+        <TextField
+          label="Recipe Title"
+          variant="outlined"
+          fullWidth
+          value={currentRecipe?.title || ''}
+          onChange={(e) => setCurrentRecipe({ ...currentRecipe, title: e.target.value })}
+        />
+        <TextField
+          label="Ingredients (comma-separated)"
+          variant="outlined"
+          fullWidth
+          value={currentRecipe?.ingredients?.join(', ') || ''}
+          onChange={(e) =>
+            setCurrentRecipe({
+              ...currentRecipe,
+              ingredients: e.target.value.split(',').map((ing) => ing.trim()),
+            })
+          }
+        />
+        <TextField
+          label="Instructions (one per line)"
+          variant="outlined"
+          multiline
+          rows={5}
+          fullWidth
+          value={currentRecipe?.instructions?.join('\n') || ''}
+          onChange={(e) =>
+            setCurrentRecipe({
+              ...currentRecipe,
+              instructions: e.target.value.split('\n').map((step) => step.trim()),
+            })
+          }
+        />
+        <TextField
+          label="Notes"
+          variant="outlined"
+          multiline
+          rows={5}
+          fullWidth
+          value={currentRecipe?.notes || ''}
+          onChange={(e) => setCurrentRecipe({ ...currentRecipe, notes: e.target.value })}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setEditRecipeOpen(false)} color="inherit">
+          Cancel
+        </Button>
+        <Button onClick={handleSaveRecipe} variant="contained" color="primary">
+          Save
+        </Button>
+      </DialogActions>
     </Dialog>
     </div>
   );
