@@ -16,12 +16,7 @@ import {
   TextField,
   Button,
   IconButton,
-  ListItemSecondaryAction,
   Paper,
-  Card,
-  CardContent,
-  CardHeader,
-  Icon
 } from '@mui/material';
 import { Delete } from '@mui/icons-material';
 import './home.css';
@@ -47,11 +42,6 @@ const HomePage = () => {
   const [error, setError] = useState(null);
 
   const apiKey = process.env.REACT_APP_GROQ_API_KEY;
-
-  const handleDietChange = (event) => {
-    const { value } = event.target;
-    setDietPreferences(typeof value === 'string' ? value.split(',') : value);
-  };
 
   const handleCuisineChange = (event) => {
     const { value } = event.target;
